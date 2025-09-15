@@ -1746,14 +1746,14 @@ case 'ytmp3': {
 }
 
 case 'anime': {
-    if (!text) return m.reply(`${SetEmoji[userSender] || SetEmoji.default} Ingresa el nombre del anime.`);
+    if (!text) return m.reply(` Ingresa el nombre del anime.`);
 
     try {
         let res = await fetch(`https://neveloopp-api.vercel.app/api/animedl?query=${encodeURIComponent(text)}`);
         let data = await res.json();
 
         if (!data.results || !data.results.length) 
-            return m.reply(`${SetEmoji[userSender] || SetEmoji.default} No se encontraron resultados.`);
+            return m.reply(`No se encontraron resultados.`);
 
         for (let episodeData of data.results) {
             if (!episodeData.pixeldrain) continue;
@@ -1766,22 +1766,18 @@ case 'anime': {
 
             let fileName = `${animeName.charAt(0).toUpperCase() + animeName.slice(1)} cap ${chapter} by Neveloopp.mp4`;
 
-            let response = await fetch('https://cdn.russellxz.click/c74a5b3b.jpg');
-            let buffer = await response.arrayBuffer();
-
             await conn.sendMessage(m.chat, {
                 document: { url: episodeData.pixeldrain },
                 mimetype: 'video/mp4',
-                fileName: fileName,
-                jpegThumbnail: Buffer.from(buffer)
+                fileName: fileName
             }, { quoted: m });
         }
 
-        m.reply(`${SetEmoji[userSender] || SetEmoji.default} Todos los episodios disponibles se han enviado.`);
+        m.reply(`Todos los episodios disponibles se han enviado.`);
 
     } catch (err) {
         console.error(err);
-        m.reply(`${SetEmoji[userSender] || SetEmoji.default} Ocurrió un error al procesar el comando.`);
+        m.reply(`Ocurrió un error al procesar el comando.`);
     }
     break;
 }
