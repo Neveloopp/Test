@@ -3647,105 +3647,99 @@ case 'menurpg': {
 case 'menu': {
   try {
     await sock.sendMessage(msg.key.remoteJid, {
-      react: { text: "📜", key: msg.key }
+      react: { text: "❤️‍🔥", key: msg.key }
     });
 
     const chatId = msg.key.remoteJid;
-    const captionText = `╔═════════════════╗
-║   🤖 𝐂𝐎𝐑𝐓𝐀𝐍𝐀 𝟐.𝟎 𝐁𝐎𝐓 🤖
-║     𝘈𝘴𝘪𝘴𝘵𝘦𝘯𝘵𝘦 𝘝𝘪𝘳𝘵𝘶𝘢𝘭     
-╚════════════════╝
+    const captionText = `
+*ටᴘ┋Nikoㅤ!*
+> by @Neveloopp   
 
-╭── 📋 MENÚ PRINCIPAL ──╮
+•ㅤMENÚ PRINCIPALㅤあ
 
-📌 Prefijo Actual: 『${global.prefix}』
-📌 Usa el prefijo antes de cada comando.
+Prefix actualㅤ:): 『${global.prefix}』
+> ➤ Usa el prefijo antes de cada comando.
 
-╭──────────────╮  
-│ ✦ 𝗨𝗡𝗘𝗧𝗘 𝗔 𝗡𝗨𝗘𝗦𝗧𝗥𝗢 𝗦𝗜𝗦𝗧𝗘𝗠𝗔 𝗗𝗘 𝗦𝗨𝗕𝗕𝗢𝗧𝗦(𝗛𝗔𝗭𝗧𝗘 𝗕𝗢𝗧) ✦ │  
-╰──────────────╯  
+এㅤ𝗨𝗡𝗘𝗧𝗘 𝗔 𝗡𝗨𝗘𝗦𝗧𝗥𝗢 𝗦𝗜𝗦𝗧𝗘𝗠𝗔 𝗗𝗘 𝗦𝗨𝗕𝗕𝗢𝗧𝗦(𝗛𝗔𝗭𝗧𝗘 𝗕𝗢𝗧) 
 
-👾 *Hazte subbot en nuestro sistema, te voy a mostrar la lista de comandos para gestiónar/hacerte subbot: 
+Hazte subbot y administra tu propio bot:  
+${global.prefix}serbot | ${global.prefix}jadibot  
+${global.prefix}sercode | ${global.prefix}code  
+${global.prefix}delbots | ${global.prefix}qr  
 
-🔹 ${global.prefix}serbot / 🔹 ${global.prefix}jadibot
-🔹 ${global.prefix}sercode / 🔹 ${global.prefix}code
-🔹 ${global.prefix}delbots / 🔹 ${global.prefix}qr
-° mas comandos en el menu de subbots...
+───  ℹ️ 𝗜𝗡𝗙𝗢 ───  
+${global.prefix}speedtest  
+${global.prefix}ping  
+${global.prefix}creador  
 
-╭── ℹ️ INFORMACIÓN ──╮
-🔹 ${global.prefix}speedtest
-🔹 ${global.prefix}ping
-🔹 ${global.prefix}creador
+─── 🗂️ 𝗠𝗘𝗡Ú𝗦 ───  
+${global.prefix}allmenu  
+${global.prefix}menugrupo  
+${global.prefix}menuaudio  
+${global.prefix}menurpg  
+${global.prefix}info  
+${global.prefix}menuowner  
+${global.prefix}menufree  
 
-╭🗂️MENÚS DISPONIBLES ╮
-🔹 ${global.prefix}allmenu
-🔹 ${global.prefix}menugrupo
-🔹 ${global.prefix}menuaudio
-🔹 ${global.prefix}menurpg
-🔹 ${global.prefix}info
-🔹 ${global.prefix}menuowner
-🔹 ${global.prefix}menufree
+─── 🛍️ 𝗩𝗘𝗡𝗧𝗔𝗦 ───  
+${global.prefix}setstock / stock  
+${global.prefix}setnetflix / netflix  
+${global.prefix}setpago / pago  
+${global.prefix}setcombos / combos  
+${global.prefix}setreglas / reglas  
+${global.prefix}sorteo  
 
-╭ 🛍️SISTEMA DE VENTAS ╮
-🔹 ${global.prefix}setstock / stock
-🔹 ${global.prefix}setnetflix / netflix
-🔹 ${global.prefix}setpago / pago
-🔹 ${global.prefix}setcombos / combos
-🔹 ${global.prefix}setreglas / reglas
-🔹 ${global.prefix}sorteo
+─── 🤖 𝗜𝗔 & 𝗖𝗛𝗔𝗧 ───  
+${global.prefix}gemini / chatgpt / dalle  
+${global.prefix}visión / visión2 / simi  
+${global.prefix}chat on|off / lumi on|off / luminai  
 
-╭── 🤖 IA & CHATBOTS ──╮
-🔹 ${global.prefix}gemini / chatgpt / dalle
-🔹 ${global.prefix}visión / visión2 / simi
-🔹 ${global.prefix}chat on|off / lumi on|off / luminai
+─── 📥 𝗗𝗘𝗦𝗖𝗔𝗥𝗚𝗔𝗦 ───  
+${global.prefix}play / playdoc / play1 / play2  
+${global.prefix}ytmp3 / ytmp4 / spotify  
+${global.prefix}mediafire / apk  
+${global.prefix}tiktok / fb / ig  
 
-╭── 📥 DESCARGAS ──╮
-🔹 ${global.prefix}play / playdoc / play1 / play2
-🔹 ${global.prefix}ytmp3 / ytmp3doc / ytmp4 / ytmp4doc
-🔹 ${global.prefix}spotify / mediafire / apk
-🔹 ${global.prefix}tiktok / fb / ig
+─── 🔍 𝗕𝗨𝗦𝗤𝗨𝗘𝗗𝗔 ───  
+${global.prefix}pixai / Yts / Tiktoksearch  
+${global.prefix}tiktokstalk  
 
-╭── 🔍 BUSCADORES ──╮
-🔹 ${global.prefix}pixai / Yts / Tiktoksearch
-🔹 ${global.prefix}tiktokstalk
+─── 🧰 𝗖𝗢𝗡𝗩𝗘𝗥𝗦𝗜𝗢𝗡 ───  
+${global.prefix}tomp3 / tovideo / toimg / tts  
+${global.prefix}gifvideo / ff / ff2  
 
-╭── 🧰 CONVERTIDORES ──╮
-🔹 ${global.prefix}tomp3 / tovideo / toimg / tts
-🔹 ${global.prefix}gifvideo / ff / ff2
+─── 🧩 𝗦𝗧𝗜𝗖𝗞𝗘𝗥𝗦 ───  
+${global.prefix}s / newpack / addsticker  
+${global.prefix}listpacks / sendpack / texto  
+${global.prefix}qc / qc2  
 
-╭── 🧩 STICKERS ──╮
-🔹 ${global.prefix}s / newpack / addsticker
-🔹 ${global.prefix}listpacks / sendpack / texto
-🔹 ${global.prefix}qc / qc2
+─── 🛠️ 𝗧𝗢𝗢𝗟𝗦 ───  
+${global.prefix}ver / tourl / whatmusic  
+${global.prefix}perfil / carga / get / xxx  
+${global.prefix}addco / delco  
 
-╭── 🛠️ HERRAMIENTAS ──╮
-🔹 ${global.prefix}ver / tourl / whatmusic
-🔹 ${global.prefix}perfil / carga / get / xxx
-🔹 ${global.prefix}addco / delco
+─── 🎮 𝗝𝗨𝗘𝗚𝗢𝗦 ───  
+${global.prefix}verdad / reto / ship / parejas  
+${global.prefix}personalidad / menurpg  
 
-╭── 🎮 MINI JUEGOS ──╮
-🔹 ${global.prefix}verdad / reto / ship / parejas
-🔹 ${global.prefix}personalidad / menurpg
+─── 🔞 +18 ───  
+${global.prefix}videoxxx / nsfwneko / nsfwwaifu  
+${global.prefix}waifu / neko  
 
-╭── 🔞 CONTENIDO +18 ──╮
-🔹 ${global.prefix}videoxxx / pornololi / nsfwneko
-🔹 ${global.prefix}waifu / neko / nsfwwaifu
+────────────────────  
+✨ *Niko 2.0* evoluciona constantemente.  
+Pronto habrá más novedades.  
+────────────────────  `;
 
-╭────────────────╮
-✨ 𝘾𝙤𝙧𝙩𝙖𝙣𝙖 2.0 está en constante mejora.  
-¡Nuevas funciones serán añadidas pronto!  
-╰────────────────╯
-
-👨‍💻 Desarrollado por *Russell XZ*`;
-
-    await sock.sendMessage2(
-      chatId,
-      {
-        image: { url: "https://cdn.russellxz.click/a4d709b4.jpeg" },
-        caption: captionText
-      },
-      msg
-    );
+await sock.sendMessage(
+  chatId,
+  {
+    video: { url: "https://cdn.russellxz.click/a1aebf9a.mp4" },
+    gifPlayback: true,
+    caption: captionText
+  },
+  { quoted: msg }
+);
 
   } catch (error) {
     console.error("Error en comando menu:", error);
