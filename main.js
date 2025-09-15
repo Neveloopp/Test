@@ -1746,40 +1746,83 @@ case 'ytmp3': {
 }
 
 case 'anime': {
-    if (!text) return m.reply(` Ingresa el nombre del anime.`);
+  const axios = require('axios');
+  const { PassThrough } = require('stream');
 
-    try {
-        let res = await fetch(`https://neveloopp-api.vercel.app/api/animedl?query=${encodeURIComponent(text)}`);
-        let data = await res.json();
-
-        if (!data.results || !data.results.length) 
-            return m.reply(`No se encontraron resultados.`);
-
-        for (let episodeData of data.results) {
-            if (!episodeData.pixeldrain) continue;
-
-            let urlParts = episodeData.episode.split('/media/');
-            let animePath = urlParts[1] || 'anime';
-            let parts = animePath.split('/');
-            let animeName = parts[0];
-            let chapter = parts[1] || '1';
-
-            let fileName = `${animeName.charAt(0).toUpperCase() + animeName.slice(1)} cap ${chapter} by Neveloopp.mp4`;
-
-            await conn.sendMessage(m.chat, {
-                document: { url: episodeData.pixeldrain },
-                mimetype: 'video/mp4',
-                fileName: fileName
-            }, { quoted: m });
-        }
-
-        m.reply(`Todos los episodios disponibles se han enviado.`);
-
-    } catch (err) {
-        console.error(err);
-        m.reply(`Ocurrió un error al procesar el comando.`);
-    }
+  if (!text) {
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: `✳️ Usa el comando correctamente, mi rey:\n\n📌 Ejemplo: *${global.prefix}anime* One Piece`
+    }, { quoted: msg });
     break;
+  }
+
+  await sock.sendMessage(msg.key.remoteJid, {
+    react: { text: '⏳', key: msg.key }
+  });
+
+  try {
+    const apiURL = `https://neveloopp-api.vercel.app/api/animedl?query=${encodeURIComponent(text)}`;
+    const res = await axios.get(apiURL);
+    const data = res.data;
+
+    if (!data.results || !data.results.length) {
+      return await sock.sendMessage(msg.key.remoteJid, {
+        text: `❌ No se encontraron resultados para: *${text}*`
+      }, { quoted: msg });
+    }
+
+    for (let episodeData of data.results) {
+      if (!episodeData.pixeldrain) continue;
+
+      let urlParts = episodeData.episode.split('/media/');
+      let animePath = urlParts[1] || 'anime';
+      let parts = animePath.split('/');
+      let animeName = parts[0];
+      let chapter = parts[1] || '1';
+
+      let fileName = `${animeName.charAt(0).toUpperCase() + animeName.slice(1)} cap ${chapter} by Neveloopp.mp4`;
+
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: `📺 *Descargando episodio disponible...*\n\n🎬 Anime: *${animeName}*\n📖 Episodio: *${chapter}*`
+      }, { quoted: msg });
+
+      const response = await axios.get(episodeData.pixeldrain, { responseType: 'stream' });
+      const streamInput = new PassThrough();
+      const buffers = [];
+
+      response.data.on('data', chunk => buffers.push(chunk));
+      response.data.on('end', async () => {
+        const finalBuffer = Buffer.concat(buffers);
+
+        await sock.sendMessage(msg.key.remoteJid, {
+          document: finalBuffer,
+          mimetype: 'video/mp4',
+          fileName: fileName
+        }, { quoted: msg });
+
+        await sock.sendMessage(msg.key.remoteJid, {
+          react: { text: '✅', key: msg.key }
+        });
+      });
+
+      response.data.pipe(streamInput);
+    }
+
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: `✅ Todos los episodios disponibles de *${text}* se han enviado.`
+    }, { quoted: msg });
+
+  } catch (err) {
+    console.error(err);
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: `❌ *Error procesando anime:* ${err.message}`
+    }, { quoted: msg });
+
+    await sock.sendMessage(msg.key.remoteJid, {
+      react: { text: '❌', key: msg.key }
+    });
+  }
+  break;
 }
         
 case 'play3': {
