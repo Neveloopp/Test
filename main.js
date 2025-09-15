@@ -1747,11 +1747,10 @@ case 'ytmp3': {
 
 case 'anime': {
   const axios = require('axios');
-  const { PassThrough } = require('stream');
 
   if (!text) {
     await sock.sendMessage(msg.key.remoteJid, {
-      text: `✳️ Usa el comando correctamente, mi rey:\n\n📌 Ejemplo: *${global.prefix}anime* One Piece`
+      text: `✳️ Usa el comando correctamente, mi rey:\n\n📌 Ejemplo: *${global.prefix}anime* Ranma`
     }, { quoted: msg });
     break;
   }
@@ -1783,34 +1782,19 @@ case 'anime': {
       let fileName = `${animeName.charAt(0).toUpperCase() + animeName.slice(1)} cap ${chapter} by Neveloopp.mp4`;
 
       await sock.sendMessage(msg.key.remoteJid, {
-        text: `📺 *Descargando episodio disponible...*\n\n🎬 Anime: *${animeName}*\n📖 Episodio: *${chapter}*`
+        document: { url: episodeData.pixeldrain },
+        mimetype: 'video/mp4',
+        fileName: fileName
       }, { quoted: msg });
-
-      const response = await axios.get(episodeData.pixeldrain, { responseType: 'stream' });
-      const streamInput = new PassThrough();
-      const buffers = [];
-
-      response.data.on('data', chunk => buffers.push(chunk));
-      response.data.on('end', async () => {
-        const finalBuffer = Buffer.concat(buffers);
-
-        await sock.sendMessage(msg.key.remoteJid, {
-          document: finalBuffer,
-          mimetype: 'video/mp4',
-          fileName: fileName
-        }, { quoted: msg });
-
-        await sock.sendMessage(msg.key.remoteJid, {
-          react: { text: '✅', key: msg.key }
-        });
-      });
-
-      response.data.pipe(streamInput);
     }
 
     await sock.sendMessage(msg.key.remoteJid, {
       text: `✅ Todos los episodios disponibles de *${text}* se han enviado.`
     }, { quoted: msg });
+
+    await sock.sendMessage(msg.key.remoteJid, {
+      react: { text: '✅', key: msg.key }
+    });
 
   } catch (err) {
     console.error(err);
