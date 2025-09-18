@@ -1748,6 +1748,7 @@ case 'ytmp3': {
 case 'anime': {
 const axios = require('axios');
 const fetch = require('node-fetch');
+const Jimp = require("jimp");
 
 if (!text) {
 await sock.sendMessage(msg.key.remoteJid, {
@@ -1801,9 +1802,7 @@ let sizeMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0;
 if (contentLength && sizeMB > 0.01) {
 fileSize = `${sizeMB.toFixed(2)} MB`;
 }
-} catch (err) {
-console.warn("No se pudo obtener el tamaño del archivo.");
-}
+} catch (err) {}
 
 let captionEp = `
 ╭  🎬  *Capítulo ${ep.episode}*  🎬  ╮
@@ -1813,11 +1812,16 @@ let captionEp = `
 ╰──────────────────────────╯
 `;
 
+let thumbResponse = await axios.get(anime.image, { responseType: "arraybuffer" });
+let image = await Jimp.read(Buffer.from(thumbResponse.data));
+image.resize(250, 250);
+let processedThumbnail = await image.getBufferAsync(Jimp.MIME_JPEG);
+
 await sock.sendMessage(msg.key.remoteJid, {
 document: { url: ep.pixeldrain },
 mimetype: 'video/mp4',
 fileName: fileName,
-jpegThumbnail: await (await axios.get(anime.image, { responseType: "arraybuffer" })).data,
+jpegThumbnail: processedThumbnail,
 caption: captionEp
 }, { quoted: msg });
 }
@@ -1831,7 +1835,6 @@ react: { text: '✅', key: msg.key }
 });
 
 } catch (err) {
-console.error(err);
 await sock.sendMessage(msg.key.remoteJid, {
 text: `❌ *Error procesando anime:* ${err.message}`
 }, { quoted: msg });
