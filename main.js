@@ -1746,69 +1746,103 @@ case 'ytmp3': {
 }
 
 case 'anime': {
-  const axios = require('axios');
+const axios = require('axios');
+const fetch = require('node-fetch');
 
-  if (!text) {
-    await sock.sendMessage(msg.key.remoteJid, {
-      text: `✳️ Usa el comando correctamente, mi rey:\n\n📌 Ejemplo: *${global.prefix}anime* Ranma`
-    }, { quoted: msg });
-    break;
-  }
-
-  await sock.sendMessage(msg.key.remoteJid, {
-    react: { text: '⏳', key: msg.key }
-  });
-
-  try {
-    const apiURL = `https://neveloopp-api.vercel.app/api/animedl?query=${encodeURIComponent(text)}`;
-    const res = await axios.get(apiURL);
-    const data = res.data;
-
-    if (!data.results || !data.results.length) {
-      return await sock.sendMessage(msg.key.remoteJid, {
-        text: `❌ No se encontraron resultados para: *${text}*`
-      }, { quoted: msg });
-    }
-
-    for (let episodeData of data.results) {
-      if (!episodeData.pixeldrain) continue;
-
-      let urlParts = episodeData.episode.split('/media/');
-      let animePath = urlParts[1] || 'anime';
-      let parts = animePath.split('/');
-      let animeName = parts[0];
-      let chapter = parts[1] || '1';
-
-      let fileName = `${animeName.charAt(0).toUpperCase() + animeName.slice(1)} cap ${chapter} by Neveloopp.mp4`;
-
-      await sock.sendMessage(msg.key.remoteJid, {
-        document: { url: episodeData.pixeldrain },
-        mimetype: 'video/mp4',
-        fileName: fileName
-      }, { quoted: msg });
-    }
-
-    await sock.sendMessage(msg.key.remoteJid, {
-      text: `✅ Todos los episodios disponibles de *${text}* se han enviado.`
-    }, { quoted: msg });
-
-    await sock.sendMessage(msg.key.remoteJid, {
-      react: { text: '✅', key: msg.key }
-    });
-
-  } catch (err) {
-    console.error(err);
-    await sock.sendMessage(msg.key.remoteJid, {
-      text: `❌ *Error procesando anime:* ${err.message}`
-    }, { quoted: msg });
-
-    await sock.sendMessage(msg.key.remoteJid, {
-      react: { text: '❌', key: msg.key }
-    });
-  }
-  break;
+if (!text) {
+await sock.sendMessage(msg.key.remoteJid, {
+text: `✳️ Usa el comando correctamente:\n\n📌 Ejemplo: *${global.prefix}anime* Ranma`
+}, { quoted: msg });
+break;
 }
-        
+
+await sock.sendMessage(msg.key.remoteJid, {
+react: { text: '⏳', key: msg.key }
+});
+
+try {
+const apiURL = `https://neveloopp-api.vercel.app/api/animedl?query=${encodeURIComponent(text)}`;
+const res = await axios.get(apiURL);
+const data = res.data;
+
+if (!data.results || !data.results.episodes || !data.results.episodes.length) {
+return await sock.sendMessage(msg.key.remoteJid, {
+text: `❌ No se encontraron resultados para: *${text}*`
+}, { quoted: msg });
+}
+
+const anime = data.results;
+
+let captionAnime = `
+╭  🌸  *Ficha del Anime*  🌸  ╮
+˖✿  *Título* : ${anime.title}
+˖✿  *Tipo* : ${anime.type}
+˖✿  *Episodios* : ${anime.epsCount}
+✿  *Descripción*:
+${anime.description}
+╰──────────────────────────
+`;
+
+await sock.sendMessage(msg.key.remoteJid, {
+image: { url: anime.image },
+caption: captionAnime
+}, { quoted: msg });
+
+for (let ep of anime.episodes) {
+if (!ep.pixeldrain) continue;
+
+let fileName = `${anime.title} cap ${ep.episode} by Neveloopp.mp4`;
+let fileSize = "Desconocido";
+
+try {
+let response = await fetch(ep.pixeldrain, { method: 'HEAD' });
+let contentLength = response.headers.get('content-length');
+let sizeMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0;
+if (contentLength && sizeMB > 0.01) {
+fileSize = `${sizeMB.toFixed(2)} MB`;
+}
+} catch (err) {
+console.warn("No se pudo obtener el tamaño del archivo.");
+}
+
+let captionEp = `
+╭  🎬  *Capítulo ${ep.episode}*  🎬  ╮
+˖✿  *Anime* : ${anime.title}
+˖✿  *Tamaño* : ${fileSize}
+˖✿  *Sistema DL* : Neveloopp
+╰──────────────────────────╯
+`;
+
+await sock.sendMessage(msg.key.remoteJid, {
+document: { url: ep.pixeldrain },
+mimetype: 'video/mp4',
+fileName: fileName,
+jpegThumbnail: await (await axios.get(anime.image, { responseType: "arraybuffer" })).data,
+caption: captionEp
+}, { quoted: msg });
+}
+
+await sock.sendMessage(msg.key.remoteJid, {
+text: `✅ Todos los episodios de *${anime.title}* se han enviado.`
+}, { quoted: msg });
+
+await sock.sendMessage(msg.key.remoteJid, {
+react: { text: '✅', key: msg.key }
+});
+
+} catch (err) {
+console.error(err);
+await sock.sendMessage(msg.key.remoteJid, {
+text: `❌ *Error procesando anime:* ${err.message}`
+}, { quoted: msg });
+
+await sock.sendMessage(msg.key.remoteJid, {
+react: { text: '❌', key: msg.key }
+});
+}
+break;
+}
+
 case 'play3': {
     const fetch = require('node-fetch');
     const axios = require('axios');
@@ -3759,7 +3793,8 @@ case 'menugrupo': {
     });
 
     const chatId = msg.key.remoteJid;
-    const captionText = `╭─❍ 𝐂𝐎𝐑𝐓𝐀𝐍𝐀 𝟐.𝟎 𝐁𝐎𝐓 ❍─╮
+    const captionText = `
+╭─❍ 𝐂𝐎𝐑𝐓𝐀𝐍𝐀 𝟐.𝟎 𝐁𝐎𝐓 ❍─╮
 │ 🎭 𝙈𝙀𝙉𝙐́ 𝘿𝙀 𝙂𝙍𝙐𝙋𝙊 🎭
 ╰───────────────╯
 
