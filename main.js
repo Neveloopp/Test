@@ -1745,6 +1745,147 @@ case 'ytmp3': {
   break;
 }
 
+case 'latanime': {
+const axios = require('axios');
+const fetch = require('node-fetch');
+const Jimp = require("jimp");
+
+if (!text) {
+await sock.sendMessage(msg.key.remoteJid, {
+text: `✳️ Usa el comando correctamente:\n\n📌 Ejemplo:\n• *${global.prefix}anime* Gachiakuta\n• *${global.prefix}anime* Gachiakuta cap 3`
+}, { quoted: msg });
+break;
+}
+
+await sock.sendMessage(msg.key.remoteJid, {
+react: { text: '⏳', key: msg.key }
+});
+
+try {
+let regexCap = /(.*)\s+cap\s+(\d+)/i;
+let match = text.match(regexCap);
+let animeQuery = text;
+let capNumero = null;
+
+if (match) {
+animeQuery = match[1].trim();
+capNumero = parseInt(match[2]);
+}
+
+const apiURL = `https://neveloopp-api.vercel.app/api/download/latanime?query=${encodeURIComponent(animeQuery)}`;
+const res = await axios.get(apiURL);
+const data = res.data;
+
+if (!data.results || !data.results.episodes || !data.results.episodes.length) {
+await sock.sendMessage(msg.key.remoteJid, {
+text: `❌ No se encontraron resultados para: *${animeQuery}*`
+}, { quoted: msg });
+break;
+}
+
+const anime = data.results;
+
+if (capNumero) {
+let episodio = anime.episodes.find(ep => parseInt(ep.episodio) === capNumero);
+
+if (!episodio) {
+await sock.sendMessage(msg.key.remoteJid, {
+text: `❌ No encontré el capítulo *${capNumero}* de *${anime.title}*`
+}, { quoted: msg });
+} else {
+let caption = `
+╭  🎬  *Capítulo ${episodio.episodio}*  🎬  ╮
+˖✿  *Anime* : ${anime.title}
+˖✿  *Power by* : Neveloopp
+╰────────────╯
+`;
+
+let thumbResponse = await axios.get(anime.image, { responseType: "arraybuffer" });
+let image = await Jimp.read(Buffer.from(thumbResponse.data));
+image.resize(250, 250);
+let editedThumbBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+
+await sock.sendMessage(msg.key.remoteJid, {
+video: { url: episodio.PixelLink },
+mimetype: 'video/mp4',
+caption: caption,
+jpegThumbnail: editedThumbBuffer
+}, { quoted: msg });
+}
+} else {
+let captionAnime = `
+╭  🌸  *Ficha del Anime*  🌸  ╮
+˖✿  *Título* : ${anime.title}
+˖✿  *Creador* : ${anime.creador}
+˖✿  *Géneros* : ${anime.genres.join(', ')}
+✿  *Descripción*:
+${anime.description}
+╰────────────────────
+`;
+
+await sock.sendMessage(msg.key.remoteJid, {
+image: { url: anime.image },
+caption: captionAnime
+}, { quoted: msg });
+
+for (let ep of anime.episodes) {
+if (!ep.PixelLink) continue;
+
+let fileName = `${anime.title} cap ${ep.episodio} by Neveloopp.mp4`;
+let fileSize = "Desconocido";
+
+try {
+let response = await fetch(ep.PixelLink, { method: 'HEAD' });
+let contentLength = response.headers.get('content-length');
+let sizeMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0;
+if (contentLength && sizeMB > 0.01) {
+fileSize = `${sizeMB.toFixed(2)} MB`;
+}
+} catch (err) {}
+
+let captionEp = `
+╭  🎬  *Capítulo ${ep.episodio}*  🎬  ╮
+˖✿  *Anime* : ${anime.title}
+˖✿  *Tamaño* : ${fileSize}
+˖✿  *Power by* : Neveloopp
+╰────────────╯
+`;
+
+let thumbResponse = await axios.get(anime.image, { responseType: "arraybuffer" });
+let image = await Jimp.read(Buffer.from(thumbResponse.data));
+image.resize(250, 250);
+let processedThumbnail = await image.getBufferAsync(Jimp.MIME_JPEG);
+
+await sock.sendMessage(msg.key.remoteJid, {
+document: { url: ep.PixelLink },
+mimetype: 'video/mp4',
+fileName: fileName,
+jpegThumbnail: processedThumbnail,
+caption: captionEp
+}, { quoted: msg });
+}
+
+await sock.sendMessage(msg.key.remoteJid, {
+text: `✅ Todos los episodios de *${anime.title}* se han enviado.`
+}, { quoted: msg });
+}
+
+await sock.sendMessage(msg.key.remoteJid, {
+react: { text: '✅', key: msg.key }
+});
+
+} catch (err) {
+await sock.sendMessage(msg.key.remoteJid, {
+text: `❌ *Error procesando anime:* ${err.message}`
+}, { quoted: msg });
+
+await sock.sendMessage(msg.key.remoteJid, {
+react: { text: '❌', key: msg.key }
+});
+}
+break;
+}
+
 case 'anime': {
 const axios = require('axios');
 const fetch = require('node-fetch');
@@ -1781,7 +1922,7 @@ let captionAnime = `
 ˖✿  *Episodios* : ${anime.epsCount}
 ✿  *Descripción*:
 ${anime.description}
-╰──────────────────────────
+╰────────────────────
 `;
 
 await sock.sendMessage(msg.key.remoteJid, {
@@ -1808,8 +1949,8 @@ let captionEp = `
 ╭  🎬  *Capítulo ${ep.episode}*  🎬  ╮
 ˖✿  *Anime* : ${anime.title}
 ˖✿  *Tamaño* : ${fileSize}
-˖✿  *Sistema DL* : Neveloopp
-╰──────────────────────────╯
+˖✿  *Power by* : Neveloopp
+╰────────────╯
 `;
 
 let thumbResponse = await axios.get(anime.image, { responseType: "arraybuffer" });
