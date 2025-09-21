@@ -5,7 +5,7 @@ const Jimp = require("jimp");
 const pending = {};
 
 module.exports = async (msg, { conn, text }) => {
-  if (!text) return msg.reply("Ingresa el nombre de la canción o el enlace de YouTube.");
+  if (!text) return msg.reply("❌ Ingresa el nombre de la canción o el enlace de YouTube.\n\nEjemplo:\n.play Despacito");
 
   try {
     await conn.sendMessage(msg.key.remoteJid, { react: { text: "⏳", key: msg.key } });
@@ -34,13 +34,8 @@ module.exports = async (msg, { conn, text }) => {
 > by Niko 🧡
 `;
 
-    const preview = await conn.sendMessage(msg.key.remoteJid, {
-      image: { url: thumbnail },
-      caption: videoInfo
-    }, { quoted: msg });
-
-    pending[preview.key.id] = { chatId: msg.key.remoteJid, videoUrl, title, commandMsg: msg };
-
+    const preview = await conn.sendMessage(msg.key.remoteJid, { image: { url: thumbnail }, caption: videoInfo }, { quoted: msg });
+    pending[preview.key.id] = { chatId: msg.key.remoteJid, videoUrl, title, thumbnail, commandMsg: msg };
     await conn.sendMessage(msg.key.remoteJid, { react: { text: "✅", key: msg.key } });
 
     if (!conn._playListener) {
@@ -57,11 +52,10 @@ module.exports = async (msg, { conn, text }) => {
             ).trim();
 
             const job = pending[cited];
-            const chatId = m.key.remoteJid;
-
             if (cited && job) {
               if (["1", "documento", "doc"].includes(texto)) await sendVideo(job, true, m);
               else if (["2", "video", "mp4"].includes(texto)) await sendVideo(job, false, m);
+              delete pending[cited];
             }
           } catch {}
         }
@@ -69,8 +63,7 @@ module.exports = async (msg, { conn, text }) => {
     }
 
     async function sendVideo(job, asDocument, quotedMsg) {
-      const { chatId, videoUrl, title } = job;
-
+      const { chatId, videoUrl, title, thumbnail } = job;
       await conn.sendMessage(chatId, { text: `⏳ Preparando video...` }, { quoted: quotedMsg });
 
       const apiURL = `https://neveloopp-api.vercel.app/api/dl/yt-direct?url=${encodeURIComponent(videoUrl)}`;
@@ -79,7 +72,7 @@ module.exports = async (msg, { conn, text }) => {
 
       let editedThumbBuffer = null;
       try {
-        const thumbBuffer = await axios.get(video.thumbnail, { responseType: "arraybuffer" }).then(r => r.data);
+        const thumbBuffer = await axios.get(thumbnail, { responseType: "arraybuffer" }).then(r => r.data);
         const editedThumb = await Jimp.read(thumbBuffer);
         editedThumb.resize(200, 150);
         editedThumbBuffer = await editedThumb.getBufferAsync(Jimp.MIME_JPEG);
