@@ -1948,104 +1948,104 @@ case 'playanime': {
 }
 
 case 'anime': {
-const axios = require('axios');
-const fetch = require('node-fetch');
-const Jimp = require("jimp");
+    const axios = require('axios');
+    const fetch = require('node-fetch');
+    const Jimp = require("jimp");
 
-if (!text) {
-await sock.sendMessage(msg.key.remoteJid, {
-text: `✳️ Usa el comando correctamente:\n\n📌 Ejemplo: *${global.prefix}anime* Ranma`
-}, { quoted: msg });
-break;
-}
+    if (!text) {
+        await sock.sendMessage(msg.key.remoteJid, {
+            text: `✳️ Usa el comando correctamente:\n\n📌 Ejemplo: *${global.prefix}anime* Ranma`
+        }, { quoted: msg });
+        break;
+    }
 
-await sock.sendMessage(msg.key.remoteJid, {
-react: { text: '⏳', key: msg.key }
-});
+    await sock.sendMessage(msg.key.remoteJid, {
+        react: { text: '⏳', key: msg.key }
+    });
 
-try {
-const apiURL = `https://neveloopp-api.vercel.app/api/animedl?query=${encodeURIComponent(text)}`;
-const res = await axios.get(apiURL);
-const data = res.data;
+    try {
+        const apiURL = `https://neveloopp-api.vercel.app/api/animedl?query=${encodeURIComponent(text)}`;
+        const res = await axios.get(apiURL);
+        const data = res.data.results;
 
-if (!data.results || !data.results.episodes || !data.results.episodes.length) {
-return await sock.sendMessage(msg.key.remoteJid, {
-text: `❌ No se encontraron resultados para: *${text}*`
-}, { quoted: msg });
-}
+        if (!data || !data.episodes || !data.episodes.length) {
+            return await sock.sendMessage(msg.key.remoteJid, {
+                text: `❌ No se encontraron resultados para: *${text}*`
+            }, { quoted: msg });
+        }
 
-const anime = data.results;
+        let thumbResponse = await axios.get(data.image, { responseType: "arraybuffer" });
+        let image = await Jimp.read(Buffer.from(thumbResponse.data));
+        image.resize(250, 250);
+        let processedThumbnail = await image.getBufferAsync(Jimp.MIME_JPEG);
 
-let captionAnime = `
+        let captionAnime = `
 ╭  🌸  *Ficha del Anime*  🌸  ╮
-˖✿  *Título* : ${anime.title}
-˖✿  *Tipo* : ${anime.type}
-˖✿  *Episodios* : ${anime.epsCount}
+˖✿  *Título* : ${data.title}
+˖✿  *Tipo* : ${data.type}
+˖✿  *Episodios* : ${data.episodios}
 ✿  *Descripción*:
-${anime.description}
+${data.description}
 ╰────────────────────
 `;
 
-await sock.sendMessage(msg.key.remoteJid, {
-image: { url: anime.image },
-caption: captionAnime
-}, { quoted: msg });
+        await sock.sendMessage(msg.key.remoteJid, {
+            image: { url: data.image },
+            caption: captionAnime,
+            jpegThumbnail: processedThumbnail
+        }, { quoted: msg });
 
-for (let ep of anime.episodes) {
-if (!ep.pixeldrain) continue;
+        for (let ep of data.episodes) {
+            if (!ep.pixeldrain) continue;
 
-let fileName = `${anime.title} cap ${ep.episode} by Neveloopp.mp4`;
-let fileSize = "Desconocido";
+            let fileName = `${data.title} cap ${ep.episode} by Neveloopp.mp4`;
+            let fileSize = "Desconocido";
 
-try {
-let response = await fetch(ep.pixeldrain, { method: 'HEAD' });
-let contentLength = response.headers.get('content-length');
-let sizeMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0;
-if (contentLength && sizeMB > 0.01) {
-fileSize = `${sizeMB.toFixed(2)} MB`;
-}
-} catch (err) {}
+            try {
+                let response = await fetch(ep.pixeldrain, { method: 'HEAD' });
+                let contentLength = response.headers.get('content-length');
+                let sizeMB = contentLength ? parseInt(contentLength) / (1024 * 1024) : 0;
+                if (contentLength && sizeMB > 0.01) {
+                    fileSize = `${sizeMB.toFixed(2)} MB`;
+                }
+            } catch (err) {}
 
-let captionEp = `
+            let captionEp = `
 ╭  🎬  *Capítulo ${ep.episode}*  🎬  ╮
-˖✿  *Anime* : ${anime.title}
+˖✿  *Anime* : ${data.title}
 ˖✿  *Tamaño* : ${fileSize}
+˖✿  *Idioma* : ${ep.idioma || "Desconocido"}
 ˖✿  *Power by* : Neveloopp
 ╰────────────╯
 `;
 
-let thumbResponse = await axios.get(anime.image, { responseType: "arraybuffer" });
-let image = await Jimp.read(Buffer.from(thumbResponse.data));
-image.resize(250, 250);
-let processedThumbnail = await image.getBufferAsync(Jimp.MIME_JPEG);
+            await sock.sendMessage(msg.key.remoteJid, {
+                document: { url: ep.pixeldrain },
+                mimetype: 'video/mp4',
+                fileName: fileName,
+                jpegThumbnail: processedThumbnail,
+                caption: captionEp
+            }, { quoted: msg });
+        }
 
-await sock.sendMessage(msg.key.remoteJid, {
-document: { url: ep.pixeldrain },
-mimetype: 'video/mp4',
-fileName: fileName,
-jpegThumbnail: processedThumbnail,
-caption: captionEp
-}, { quoted: msg });
-}
+        await sock.sendMessage(msg.key.remoteJid, {
+            text: `✅ Todos los episodios de *${data.title}* se han enviado.`
+        }, { quoted: msg });
 
-await sock.sendMessage(msg.key.remoteJid, {
-text: `✅ Todos los episodios de *${anime.title}* se han enviado.`
-}, { quoted: msg });
+        await sock.sendMessage(msg.key.remoteJid, {
+            react: { text: '✅', key: msg.key }
+        });
 
-await sock.sendMessage(msg.key.remoteJid, {
-react: { text: '✅', key: msg.key }
-});
+    } catch (err) {
+        await sock.sendMessage(msg.key.remoteJid, {
+            text: `❌ *Error procesando anime:* ${err.message}`
+        }, { quoted: msg });
 
-} catch (err) {
-await sock.sendMessage(msg.key.remoteJid, {
-text: `❌ *Error procesando anime:* ${err.message}`
-}, { quoted: msg });
-
-await sock.sendMessage(msg.key.remoteJid, {
-react: { text: '❌', key: msg.key }
-});
-}
-break;
+        await sock.sendMessage(msg.key.remoteJid, {
+            react: { text: '❌', key: msg.key }
+        });
+    }
+    break;
 }
 
 case 'play3': {
