@@ -1,13 +1,15 @@
 const axios = require("axios");
 const yts = require("yt-search");
 const Jimp = require("jimp");
-const { ytdlvid, ytdlaud } = require("../scraper/ytdl");
+const { ytdlvid, ytdlaud } = require("../scraper/ytdl"); 
 
 const pending = {};
 
 module.exports = async (msg, { conn, text }) => {
   if (!text) {
-    return conn.sendMessage(msg.key.remoteJid, { text: "❌ Ingresa el nombre de la canción o el enlace de YouTube.\n\nEjemplo:\n.play Despacito" }, { quoted: msg });
+    return conn.sendMessage(msg.key.remoteJid, { 
+      text: "❌ Ingresa el nombre de la canción o el enlace de YouTube.\n\nEjemplo:\n.play Despacito" 
+    }, { quoted: msg });
   }
 
   try {
