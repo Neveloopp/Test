@@ -60,8 +60,8 @@ async function ytdlvid(u) {
 async function ytdlaud(u) {
   try {
     const videoUrl = await fetchMedia(u);
-    const videoPath = `./tmp/input-${Date.now()}.mp4`;
-    const output = `./tmp/${Date.now()}.mp3`;
+    const videoPath = `../tmp/input-${Date.now()}.mp4`;
+    const output = `../tmp/${Date.now()}.mp3`;
     const writer = fs.createWriteStream(videoPath);
 
     const response = await axios.get(videoUrl, { responseType: "stream" });
