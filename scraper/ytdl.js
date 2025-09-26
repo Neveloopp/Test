@@ -2,6 +2,7 @@ const axios = require("axios");
 const fs = require("fs");
 const ffmpeg = require("fluent-ffmpeg");
 const FormData = require("form-data");
+const path = require("path");
 
 async function waitForFile(url, attempts = 20, delay = 3000) {
   for (let i = 0; i < attempts; i++) {
@@ -28,11 +29,7 @@ async function fetchMedia(u) {
   if (!items.length) throw new Error("No se encontraron opciones");
 
   const best = items.sort((a, b) => {
-    const getRes = x => {
-      if (!x.mediaRes) return 0;
-      const m = x.mediaRes.match(/(\d+)/);
-      return m ? parseInt(m[1]) : 0;
-    };
+    const getRes = x => x.mediaRes ? parseInt((x.mediaRes.match(/(\d+)/) || [0])[1]) : 0;
     return getRes(b) - getRes(a);
   })[0];
 
@@ -43,27 +40,22 @@ async function fetchMedia(u) {
 async function ytdlvid(u) {
   try {
     const fileUrl = await fetchMedia(u);
-    return {
-      status: true,
-      creator: "neveloopp",
-      url: fileUrl
-    };
+    return { status: true, creator: "neveloopp", url: fileUrl };
   } catch (err) {
-    return {
-      status: false,
-      creator: "neveloopp",
-      message: err.message
-    };
+    return { status: false, creator: "neveloopp", message: err.message };
   }
 }
 
 async function ytdlaud(u) {
   try {
-    const videoUrl = await fetchMedia(u);
-    const videoPath = `../tmp/input-${Date.now()}.mp4`;
-    const output = `../tmp/${Date.now()}.mp3`;
-    const writer = fs.createWriteStream(videoPath);
+    const tmpDir = path.join(__dirname, "../tmp");
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
 
+    const videoUrl = await fetchMedia(u);
+    const videoPath = path.join(tmpDir, `input-${Date.now()}.mp4`);
+    const output = path.join(tmpDir, `${Date.now()}.mp3`);
+
+    const writer = fs.createWriteStream(videoPath);
     const response = await axios.get(videoUrl, { responseType: "stream" });
     response.data.pipe(writer);
 
@@ -95,17 +87,9 @@ async function ytdlaud(u) {
     fs.unlinkSync(videoPath);
     fs.unlinkSync(output);
 
-    return {
-      status: true,
-      creator: "neveloopp",
-      url: upload.data.url
-    };
+    return { status: true, creator: "neveloopp", url: upload.data.url };
   } catch (err) {
-    return {
-      status: false,
-      creator: "neveloopp",
-      message: err.message
-    };
+    return { status: false, creator: "neveloopp", message: err.message };
   }
 }
 
