@@ -1,7 +1,7 @@
 const axios = require("axios");
 const yts = require("yt-search");
 const Jimp = require("jimp");
-const { ytdlvid, ytdlaud } = require("../scraper/ytdl"); 
+const { ytdlvid, ytdlaud } = require("../scraper/ytdl");
 
 const pending = {};
 
@@ -75,7 +75,9 @@ module.exports = async (msg, { conn, text }) => {
 
       const apiRes = await ytdlaud(videoUrl);
       if (!apiRes.status) {
-        return conn.sendMessage(chatId, { text: "No se pudo obtener el audio." }, { quoted: quotedMsg });
+        return conn.sendMessage(chatId, { 
+          text: `❌ No se pudo obtener el audio.\nRazón: ${apiRes.message || "Desconocida"}` 
+        }, { quoted: quotedMsg });
       }
 
       let editedThumbBuffer = null;
@@ -100,7 +102,9 @@ module.exports = async (msg, { conn, text }) => {
 
       const apiRes = await ytdlvid(videoUrl);
       if (!apiRes.status) {
-        return conn.sendMessage(chatId, { text: "No se pudo obtener el video." }, { quoted: quotedMsg });
+        return conn.sendMessage(chatId, { 
+          text: `❌ No se pudo obtener el video.\nRazón: ${apiRes.message || "Desconocida"}` 
+        }, { quoted: quotedMsg });
       }
 
       let editedThumbBuffer = null;
