@@ -1,17 +1,22 @@
 const axios = require("axios");
 const yts = require("yt-search");
 const Jimp = require("jimp");
+const { ytdlvid, ytdlaud } = require("../scraper/ytdl");
 
 const pending = {};
 
 module.exports = async (msg, { conn, text }) => {
-  if (!text) return msg.reply("❌ Ingresa el nombre de la canción o el enlace de YouTube.\n\nEjemplo:\n.play Despacito");
+  if (!text) {
+    return conn.sendMessage(msg.key.remoteJid, { text: "❌ Ingresa el nombre de la canción o el enlace de YouTube.\n\nEjemplo:\n.play Despacito" }, { quoted: msg });
+  }
 
   try {
     await conn.sendMessage(msg.key.remoteJid, { react: { text: "⏳", key: msg.key } });
 
     const search = await yts(text);
-    if (!search.videos.length) return msg.reply("No se encontraron resultados.");
+    if (!search.videos.length) {
+      return conn.sendMessage(msg.key.remoteJid, { text: "No se encontraron resultados." }, { quoted: msg });
+    }
 
     const video = search.videos[0];
     const { url: videoUrl, title, timestamp: duration, views, author, thumbnail } = video;
@@ -28,8 +33,8 @@ module.exports = async (msg, { conn, text }) => {
 ╰───────────────╯
 
 📥 Opciones de Descarga:
-1️⃣ Documento (MP4)
-2️⃣ Video MP4 normal
+1️⃣ Audio MP3 (Documento)
+2️⃣ Video MP4 (Documento)
 
 > by Niko 🧡
 `;
@@ -53,8 +58,8 @@ module.exports = async (msg, { conn, text }) => {
 
             const job = pending[cited];
             if (cited && job) {
-              if (["1", "documento", "doc"].includes(texto)) await sendVideo(job, true, m);
-              else if (["2", "video", "mp4"].includes(texto)) await sendVideo(job, false, m);
+              if (["1", "audio", "mp3"].includes(texto)) await sendAudio(job, m);
+              else if (["2", "video", "mp4"].includes(texto)) await sendVideo(job, m);
               delete pending[cited];
             }
           } catch {}
@@ -62,13 +67,14 @@ module.exports = async (msg, { conn, text }) => {
       });
     }
 
-    async function sendVideo(job, asDocument, quotedMsg) {
+    async function sendAudio(job, quotedMsg) {
       const { chatId, videoUrl, title, thumbnail } = job;
-      await conn.sendMessage(chatId, { text: `⏳ Preparando video...` }, { quoted: quotedMsg });
+      await conn.sendMessage(chatId, { text: `⏳ Preparando audio...` }, { quoted: quotedMsg });
 
-      const apiURL = `https://neveloopp-api.vercel.app/api/dl/yt-direct?url=${encodeURIComponent(videoUrl)}`;
-      const apiRes = await axios.get(apiURL);
-      if (!apiRes.data?.url) return conn.sendMessage(chatId, { text: "No se pudo obtener el video." }, { quoted: quotedMsg });
+      const apiRes = await ytdlaud(videoUrl);
+      if (!apiRes.status) {
+        return conn.sendMessage(chatId, { text: "No se pudo obtener el audio." }, { quoted: quotedMsg });
+      }
 
       let editedThumbBuffer = null;
       try {
@@ -79,17 +85,41 @@ module.exports = async (msg, { conn, text }) => {
       } catch {}
 
       await conn.sendMessage(chatId, {
-        [asDocument ? "document" : "video"]: { url: apiRes.data.url },
+        document: { url: apiRes.url },
+        mimetype: "audio/mpeg",
+        fileName: `${title}.mp3`,
+        jpegThumbnail: editedThumbBuffer
+      }, { quoted: quotedMsg });
+    }
+
+    async function sendVideo(job, quotedMsg) {
+      const { chatId, videoUrl, title, thumbnail } = job;
+      await conn.sendMessage(chatId, { text: `⏳ Preparando video...` }, { quoted: quotedMsg });
+
+      const apiRes = await ytdlvid(videoUrl);
+      if (!apiRes.status) {
+        return conn.sendMessage(chatId, { text: "No se pudo obtener el video." }, { quoted: quotedMsg });
+      }
+
+      let editedThumbBuffer = null;
+      try {
+        const thumbBuffer = await axios.get(thumbnail, { responseType: "arraybuffer" }).then(r => r.data);
+        const editedThumb = await Jimp.read(thumbBuffer);
+        editedThumb.resize(200, 150);
+        editedThumbBuffer = await editedThumb.getBufferAsync(Jimp.MIME_JPEG);
+      } catch {}
+
+      await conn.sendMessage(chatId, {
+        document: { url: apiRes.url },
         mimetype: "video/mp4",
         fileName: `${title}.mp4`,
-        caption: asDocument ? undefined : `🎬 Aquí tienes tu video`,
         jpegThumbnail: editedThumbBuffer
       }, { quoted: quotedMsg });
     }
 
   } catch (err) {
     console.error(err);
-    msg.reply(`Ocurrió un error:\n\`\`\`${err.stack}\`\`\``);
+    conn.sendMessage(msg.key.remoteJid, { text: `Ocurrió un error:\n\`\`\`${err.message}\`\`\`` }, { quoted: msg });
   }
 };
 
