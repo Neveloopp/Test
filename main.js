@@ -3928,52 +3928,82 @@ ${global.prefix}setcombos / combos
 ${global.prefix}setreglas / reglas  
 ${global.prefix}sorteo  
 
-─── 🤖 𝗜𝗔 & 𝗖𝗛𝗔𝗧 ───  
-${global.prefix}gemini / chatgpt / dalle  
-${global.prefix}visión / visión2 / simi  
-${global.prefix}chat on|off / lumi on|off / luminai  
-
-─── 📥 𝗗𝗘𝗦𝗖𝗔𝗥𝗚𝗔𝗦 ───  
-${global.prefix}play / playdoc / play1 / play2  
-${global.prefix}ytmp3 / ytmp4 / spotify  
-${global.prefix}mediafire / apk  
-${global.prefix}tiktok / fb / ig  
-
-─── 🔍 𝗕𝗨𝗦𝗤𝗨𝗘𝗗𝗔 ───  
-${global.prefix}pixai / Yts / Tiktoksearch  
+> ─── 🤖 𝗜𝗔 & 𝗖𝗛𝗔𝗧 ───  
+${global.prefix}gemini  
+${global.prefix}chatgpt  
+${global.prefix}dalle  
+${global.prefix}visión  
+${global.prefix}visión2  
+${global.prefix}simi  
+${global.prefix}chat on|off  
+${global.prefix}lumi on|off  
+${global.prefix}luminai  
+> ─── 📥 𝗗𝗘𝗦𝗖𝗔𝗥𝗚𝗔𝗦 ───  
+${global.prefix}play 
+${global.prefix}anime
+${global.prefix}latanime
+${global.prefix}playanime 
+${global.prefix}spotify  
+${global.prefix}mediafire  
+${global.prefix}apk  
+${global.prefix}tiktok  
+${global.prefix}fb  
+${global.prefix}ig  
+> ─── 🔍 𝗕𝗨𝗦𝗤𝗨𝗘𝗗𝗔 ───  
+${global.prefix}pixai  
+${global.prefix}Yts  
+${global.prefix}Tiktoksearch  
 ${global.prefix}tiktokstalk  
+> ─── 🧰 𝗖𝗢𝗡𝗩𝗘𝗥𝗦𝗜𝗢𝗡 ───  
+${global.prefix}tomp3  
+${global.prefix}tovideo  
+${global.prefix}toimg  
+${global.prefix}tts  
+${global.prefix}gifvideo  
+${global.prefix}ff  
+${global.prefix}ff2  
+> ─── 🧩 𝗦𝗧𝗜𝗖𝗞𝗘𝗥𝗦 ───  
+${global.prefix}s  
+${global.prefix}newpack  
+${global.prefix}addsticker  
+${global.prefix}listpacks  
+${global.prefix}sendpack  
+${global.prefix}texto  
+${global.prefix}qc  
+${global.prefix}qc2  
+> ─── 🛠️ 𝗧𝗢𝗢𝗟𝗦 ───  
+${global.prefix}ver  
+${global.prefix}tourl  
+${global.prefix}whatmusic  
+${global.prefix}perfil  
+${global.prefix}carga  
+${global.prefix}get  
+${global.prefix}xxx  
+${global.prefix}addco  
+${global.prefix}delco  
+> ─── 🎮 𝗝𝗨𝗘𝗚𝗢𝗦 ───  
+${global.prefix}verdad  
+${global.prefix}reto  
+${global.prefix}ship  
+${global.prefix}parejas  
+${global.prefix}personalidad  
+${global.prefix}menurpg  
+> ─── 🔞 +18 ───  
+${global.prefix}videoxxx  
+${global.prefix}nsfwneko  
+${global.prefix}nsfwwaifu  
+${global.prefix}waifu  
+${global.prefix}neko
 
-─── 🧰 𝗖𝗢𝗡𝗩𝗘𝗥𝗦𝗜𝗢𝗡 ───  
-${global.prefix}tomp3 / tovideo / toimg / tts  
-${global.prefix}gifvideo / ff / ff2  
-
-─── 🧩 𝗦𝗧𝗜𝗖𝗞𝗘𝗥𝗦 ───  
-${global.prefix}s / newpack / addsticker  
-${global.prefix}listpacks / sendpack / texto  
-${global.prefix}qc / qc2  
-
-─── 🛠️ 𝗧𝗢𝗢𝗟𝗦 ───  
-${global.prefix}ver / tourl / whatmusic  
-${global.prefix}perfil / carga / get / xxx  
-${global.prefix}addco / delco  
-
-─── 🎮 𝗝𝗨𝗘𝗚𝗢𝗦 ───  
-${global.prefix}verdad / reto / ship / parejas  
-${global.prefix}personalidad / menurpg  
-
-─── 🔞 +18 ───  
-${global.prefix}videoxxx / nsfwneko / nsfwwaifu  
-${global.prefix}waifu / neko  
-
-────────────────────  
-✨ *Niko 2.0* evoluciona constantemente.  
-Pronto habrá más novedades.  
-────────────────────  `;
+> ────────────────────  
+> ✨ *Niko 2.0* evoluciona constantemente.  
+> Pronto habrá más novedades.  
+> ────────────────────`;
 
 await sock.sendMessage(
   chatId,
   {
-    video: { url: "https://cdn.russellxz.click/a1aebf9a.mp4" },
+    video: { url: "https://cdn.russellxz.click/26cbf95b.mp4" },
     gifPlayback: true,
     caption: captionText
   },
