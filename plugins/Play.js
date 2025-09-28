@@ -22,6 +22,14 @@ module.exports = async (msg, { conn, text, command, args }) => {
       const video = search.videos[0];
       const { url: videoUrl, title, timestamp: duration, views, author, thumbnail } = video;
 
+      let editedThumbBuffer = null;
+      try {
+        const thumbBuffer = await axios.get(thumbnail, { responseType: "arraybuffer" }).then(r => r.data);
+        const editedThumb = await Jimp.read(thumbBuffer);
+        editedThumb.resize(200, 150);
+        editedThumbBuffer = await editedThumb.getBufferAsync(Jimp.MIME_JPEG);
+      } catch {}
+
       const videoInfo = `
 ╭  \`\`\`Resultado Encontrado\`\`\`  ╮
 
@@ -41,19 +49,10 @@ module.exports = async (msg, { conn, text, command, args }) => {
         caption: videoInfo,
         footer: "by Niko 🧡",
         buttons: [
-          {
-            buttonId: `.playaudio ${videoUrl}`,
-            buttonText: { displayText: "⇣ AUDIO MP3 ⇣" },
-            type: 1
-          },
-          {
-            buttonId: `.playvideo ${videoUrl}`,
-            buttonText: { displayText: "⇣ VIDEO MP4 ⇣" },
-            type: 1
-          }
+          { buttonId: `.playaudio ${videoUrl}`, buttonText: { displayText: "⇣ AUDIO MP3 ⇣" } },
+          { buttonId: `.playvideo ${videoUrl}`, buttonText: { displayText: "⇣ VIDEO MP4 ⇣" } }
         ],
         headerType: 4,
-        viewOnce: true,
       }, { quoted: msg });
 
       await conn.sendMessage(msg.key.remoteJid, { react: { text: "✅", key: msg.key } });
@@ -67,8 +66,11 @@ module.exports = async (msg, { conn, text, command, args }) => {
   if (command === "playaudio") {
     const videoUrl = args[0];
     await conn.sendMessage(msg.key.remoteJid, { text: `⏳ Preparando audio...` }, { quoted: msg });
+
     const apiRes = await ytdlaud(videoUrl);
-    if (!apiRes.status) return conn.sendMessage(msg.key.remoteJid, { text: `❌ No se pudo obtener el audio.\nRazón: ${apiRes.message || "Desconocida"}` }, { quoted: msg });
+    if (!apiRes.status) {
+      return conn.sendMessage(msg.key.remoteJid, { text: `❌ No se pudo obtener el audio.\nRazón: ${apiRes.message || "Desconocida"}` }, { quoted: msg });
+    }
 
     let thumbBuffer = null;
     try {
@@ -91,8 +93,11 @@ module.exports = async (msg, { conn, text, command, args }) => {
   if (command === "playvideo") {
     const videoUrl = args[0];
     await conn.sendMessage(msg.key.remoteJid, { text: `⏳ Preparando video...` }, { quoted: msg });
+
     const apiRes = await ytdlvid(videoUrl);
-    if (!apiRes.status) return conn.sendMessage(msg.key.remoteJid, { text: `❌ No se pudo obtener el video.\nRazón: ${apiRes.message || "Desconocida"}` }, { quoted: msg });
+    if (!apiRes.status) {
+      return conn.sendMessage(msg.key.remoteJid, { text: `❌ No se pudo obtener el video.\nRazón: ${apiRes.message || "Desconocida"}` }, { quoted: msg });
+    }
 
     let thumbBuffer = null;
     try {
