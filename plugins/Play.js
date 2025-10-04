@@ -1,7 +1,6 @@
 const axios = require("axios");
 const yts = require("yt-search");
 const Jimp = require("jimp");
-const { ytdlvid, ytdlaud } = require("../scraper/ytdl");
 
 const pending = {};
 
@@ -21,7 +20,15 @@ module.exports = async (msg, { conn, text }) => {
     }
 
     const video = search.videos[0];
-    const { url: videoUrl, title, timestamp: duration, views, author, thumbnail } = video;
+    const { url: videoUrl, title, timestamp: duration, views, author, thumbnail, ago, description } = video;
+
+    let editedThumbBuffer = null;
+    try {
+      const thumbBuffer = await axios.get(thumbnail, { responseType: "arraybuffer" }).then(r => r.data);
+      const editedThumb = await Jimp.read(thumbBuffer);
+      editedThumb.resize(200, 150);
+      editedThumbBuffer = await editedThumb.getBufferAsync(Jimp.MIME_JPEG);
+    } catch {}
 
     const videoInfo = `
 ╭  \`\`\`Resultado Encontrado\`\`\`  ╮
@@ -30,6 +37,7 @@ module.exports = async (msg, { conn, text }) => {
 ˖✿  *Duración* : ${duration}
 ˖✿  *Vistas* : ${views.toLocaleString()}
 ˖✿  *Canal* : ${author.name}
+˖✿  *Publicado* : ${ago}
 ˖✿  *Link* : ${videoUrl}
 
 ╰───────────────╯
@@ -37,11 +45,13 @@ module.exports = async (msg, { conn, text }) => {
 📥 Opciones de Descarga:
 1️⃣ Audio MP3 (Documento)
 2️⃣ Video MP4 (Documento)
+3️⃣ Audio MP3 (Reproductor)
+4️⃣ Video MP4 (Reproductor)
 
 > by Niko 🧡
 `;
 
-    const preview = await conn.sendMessage(msg.key.remoteJid, { image: { url: thumbnail }, caption: videoInfo }, { quoted: msg });
+    const preview = await conn.sendMessage(msg.key.remoteJid, { image: { url: thumbnail }, caption: videoInfo, jpegThumbnail: editedThumbBuffer }, { quoted: msg });
     pending[preview.key.id] = { chatId: msg.key.remoteJid, videoUrl, title, thumbnail, commandMsg: msg };
     await conn.sendMessage(msg.key.remoteJid, { react: { text: "✅", key: msg.key } });
 
@@ -60,8 +70,10 @@ module.exports = async (msg, { conn, text }) => {
 
             const job = pending[cited];
             if (cited && job) {
-              if (["1", "audio", "mp3"].includes(texto)) await sendAudio(job, m);
-              else if (["2", "video", "mp4"].includes(texto)) await sendVideo(job, m);
+              if (["1", "audio", "mp3"].includes(texto)) await sendAudioDoc(job, m);
+              else if (["2", "video", "mp4"].includes(texto)) await sendVideoDoc(job, m);
+              else if (["3", "audio play"].includes(texto)) await sendAudioPlay(job, m);
+              else if (["4", "video play"].includes(texto)) await sendVideoPlay(job, m);
               delete pending[cited];
             }
           } catch {}
@@ -69,17 +81,10 @@ module.exports = async (msg, { conn, text }) => {
       });
     }
 
-    async function sendAudio(job, quotedMsg) {
+    async function sendAudioDoc(job, quotedMsg) {
       const { chatId, videoUrl, title, thumbnail } = job;
       await conn.sendMessage(chatId, { text: `⏳ Preparando audio...` }, { quoted: quotedMsg });
-
-      const apiRes = await ytdlaud(videoUrl);
-      if (!apiRes.status) {
-        return conn.sendMessage(chatId, { 
-          text: `❌ No se pudo obtener el audio.\nRazón: ${apiRes.message || "Desconocida"}` 
-        }, { quoted: quotedMsg });
-      }
-
+      const fileUrl = `https://api-nv.eliasaryt.pro/api/dl/yt-direct?url=${encodeURIComponent(videoUrl)}&type=audio&key=Neveloopp`;
       let editedThumbBuffer = null;
       try {
         const thumbBuffer = await axios.get(thumbnail, { responseType: "arraybuffer" }).then(r => r.data);
@@ -87,26 +92,18 @@ module.exports = async (msg, { conn, text }) => {
         editedThumb.resize(200, 150);
         editedThumbBuffer = await editedThumb.getBufferAsync(Jimp.MIME_JPEG);
       } catch {}
-
       await conn.sendMessage(chatId, {
-        document: { url: apiRes.url },
+        document: { url: fileUrl },
         mimetype: "audio/mpeg",
         fileName: `${title}.mp3`,
         jpegThumbnail: editedThumbBuffer
       }, { quoted: quotedMsg });
     }
 
-    async function sendVideo(job, quotedMsg) {
+    async function sendVideoDoc(job, quotedMsg) {
       const { chatId, videoUrl, title, thumbnail } = job;
       await conn.sendMessage(chatId, { text: `⏳ Preparando video...` }, { quoted: quotedMsg });
-
-      const apiRes = await ytdlvid(videoUrl);
-      if (!apiRes.status) {
-        return conn.sendMessage(chatId, { 
-          text: `❌ No se pudo obtener el video.\nRazón: ${apiRes.message || "Desconocida"}` 
-        }, { quoted: quotedMsg });
-      }
-
+      const fileUrl = `https://api-nv.eliasaryt.pro/api/dl/yt-direct?url=${encodeURIComponent(videoUrl)}&type=video&key=Neveloopp`;
       let editedThumbBuffer = null;
       try {
         const thumbBuffer = await axios.get(thumbnail, { responseType: "arraybuffer" }).then(r => r.data);
@@ -114,12 +111,34 @@ module.exports = async (msg, { conn, text }) => {
         editedThumb.resize(200, 150);
         editedThumbBuffer = await editedThumb.getBufferAsync(Jimp.MIME_JPEG);
       } catch {}
-
       await conn.sendMessage(chatId, {
-        document: { url: apiRes.url },
+        document: { url: fileUrl },
         mimetype: "video/mp4",
         fileName: `${title}.mp4`,
         jpegThumbnail: editedThumbBuffer
+      }, { quoted: quotedMsg });
+    }
+
+    async function sendAudioPlay(job, quotedMsg) {
+      const { chatId, videoUrl, title, thumbnail } = job;
+      await conn.sendMessage(chatId, { text: `⏳ Reproduciendo audio...` }, { quoted: quotedMsg });
+      const fileUrl = `https://api-nv.eliasaryt.pro/api/dl/yt-direct?url=${encodeURIComponent(videoUrl)}&type=audio&key=Neveloopp`;
+      await conn.sendMessage(chatId, {
+        audio: { url: fileUrl },
+        mimetype: "audio/mpeg",
+        fileName: `${title}.mp3`,
+        ptt: false
+      }, { quoted: quotedMsg });
+    }
+
+    async function sendVideoPlay(job, quotedMsg) {
+      const { chatId, videoUrl, title, thumbnail } = job;
+      await conn.sendMessage(chatId, { text: `⏳ Reproduciendo video...` }, { quoted: quotedMsg });
+      const fileUrl = `https://api-nv.eliasaryt.pro/api/dl/yt-direct?url=${encodeURIComponent(videoUrl)}&type=video&key=Neveloopp`;
+      await conn.sendMessage(chatId, {
+        video: { url: fileUrl },
+        mimetype: "video/mp4",
+        fileName: `${title}.mp4`
       }, { quoted: quotedMsg });
     }
 
